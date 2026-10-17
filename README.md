@@ -1,1 +1,85 @@
-# HaninSkinCare
+# Hanin Skincare
+
+A mobile app for managing a skincare clinic's sessions and patients.
+
+Built with Expo (React Native) and TypeScript. Data is stored on the device
+with AsyncStorage, so the app works offline.
+
+## What it does
+
+Each session records:
+
+| Field | Notes |
+| --- | --- |
+| Patient name | Pick an existing patient, or add a new one inline |
+| Start session | Date and time the session begins |
+| End session | Date and time the session ends |
+| Price | Session price, with the clinic currency |
+| Type of session | Facial, HydraFacial, peel, laser, and so on |
+
+A session also tracks whether it is paid, plus optional notes.
+
+## Screens
+
+- Dashboard — today's schedule, expected revenue for today and this week, and the unpaid total.
+- Sessions — search by patient name and filter by status or type of session.
+- Session detail — full session details, with edit, delete and paid/unpaid actions.
+- New / edit session — the form for patient, start and end time, price and type of session.
+- Patients — patient list with session counts and spend, expandable for contact details.
+- Settings — clinic name, currency, treatment types (name, default price, default length), sample data and reset.
+
+## Treatment types
+
+Types of session are configurable in Settings. Each type has a name, a default
+price and a default length. When you pick a type on a new session, the price and
+end time are filled in from those defaults, and you can still change them.
+
+## Getting started
+
+```bash
+npm install
+npm start
+```
+
+Then scan the QR code with Expo Go, or press `a` for Android, `i` for iOS, or `w` for web.
+
+Other scripts:
+
+```bash
+npm run android
+npm run ios
+npm run web
+npm run typecheck
+```
+
+## Project layout
+
+```
+App.tsx                       App root, loads stored data before showing the UI
+index.ts                      Expo entry point
+src/
+  components/                 Reusable UI (Button, TextField, Card, ChipSelect, ...)
+  navigation/                 Stack and tab navigators, route types
+  screens/                    One file per screen
+  storage/                    AsyncStorage persistence and the data context
+  theme/                      Colours, spacing, typography, default treatment types
+  types/                      Domain types (Session, Patient, TreatmentType, Settings)
+  utils/                      Date and currency helpers
+```
+
+## Data
+
+State lives in a React context (`src/storage/DataProvider.tsx`) and is saved to
+AsyncStorage after every change. Stored data is validated on load, so a corrupt
+or older record falls back to safe defaults instead of crashing the app.
+
+Data stays on the device. Settings has "Load sample data" to fill the app with a
+demo dataset, and "Delete all data" to clear everything.
+
+## Notes
+
+- On iOS the date and time pickers open in a bottom sheet; on Android they use the
+  platform dialogs. Web has no native picker, so those fields accept typed
+  `YYYY-MM-DD` and `HH:MM` input instead.
+- Deleting a patient keeps their past sessions, because each session stores the
+  patient name directly.

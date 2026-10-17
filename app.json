@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Hanin Skincare",
+    "slug": "hanin-skincare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#FDF6F3"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.haninskincare.app"
+    },
+    "android": {
+      "package": "com.haninskincare.app",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
+  }
+}
