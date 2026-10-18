@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Button } from '../components/Button';
@@ -28,6 +29,7 @@ export function SettingsScreen() {
     importData,
     snapshot,
   } = useData();
+  const insets = useSafeAreaInsets();
 
   const [currencySheet, setCurrencySheet] = useState(false);
   const [busy, setBusy] = useState<'export' | 'import' | null>(null);
@@ -147,7 +149,10 @@ export function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.sm }]}
+    >
       <Text style={styles.heading}>Settings</Text>
 
       <Card title="Clinic">

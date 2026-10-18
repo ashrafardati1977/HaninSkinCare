@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps } from '@react-navigation/native';
@@ -23,6 +24,7 @@ type Props = CompositeScreenProps<
 
 export function DashboardScreen({ navigation }: Props) {
   const { sessions, patients, settings, toggleSessionPaid } = useData();
+  const insets = useSafeAreaInsets();
   const now = new Date();
 
   const stats = useMemo(() => {
@@ -76,7 +78,10 @@ export function DashboardScreen({ navigation }: Props) {
   const hasData = sessions.length > 0 || patients.length > 0;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.sm }]}
+    >
       <View style={styles.hero}>
         <View style={styles.heroText}>
           <Text style={styles.greeting}>{settings.clinicName}</Text>

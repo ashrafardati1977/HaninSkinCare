@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps } from '@react-navigation/native';
@@ -24,6 +25,7 @@ type StatusFilter = 'all' | SessionStatus;
 
 export function SessionsScreen({ navigation }: Props) {
   const { sessions, treatmentTypes, settings, toggleSessionPaid } = useData();
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
   const [typeId, setTypeId] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function SessionsScreen({ navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Text style={styles.heading}>Sessions</Text>
         <Text style={styles.summary}>
           {filtered.length} shown · {formatMoney(total, settings.currency)}
@@ -150,7 +152,7 @@ export function SessionsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.sm },
+  header: { paddingHorizontal: spacing.lg, gap: spacing.sm },
   heading: { ...typography.display, color: colors.text },
   summary: { ...typography.caption, color: colors.textMuted },
   searchRow: {

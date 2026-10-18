@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps } from '@react-navigation/native';
@@ -21,6 +22,7 @@ type Props = CompositeScreenProps<
 
 export function PatientsScreen({ navigation }: Props) {
   const { patients, sessions, settings, deletePatient } = useData();
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -47,7 +49,7 @@ export function PatientsScreen({ navigation }: Props) {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Text style={styles.heading}>Patients</Text>
         <Text style={styles.summary}>{patients.length} total</Text>
         <View style={styles.searchRow}>
@@ -220,7 +222,7 @@ function initials(name: string): string {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.sm },
+  header: { paddingHorizontal: spacing.lg, gap: spacing.sm },
   heading: { ...typography.display, color: colors.text },
   summary: { ...typography.caption, color: colors.textMuted },
   searchRow: {
