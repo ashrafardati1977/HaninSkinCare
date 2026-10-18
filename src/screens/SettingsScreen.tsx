@@ -8,6 +8,8 @@ import { ChipSelect } from '../components/ChipSelect';
 import { OptionSheet } from '../components/OptionSheet';
 import { TextField } from '../components/TextField';
 import { useData } from '../storage/DataProvider';
+import { describeImport, type ImportMode } from '../storage/backup';
+import { exportBackup, pickBackupFile } from '../storage/backupFiles';
 import { colors, CURRENCIES, radius, spacing, typography } from '../theme';
 import { formatMoney, currencySymbol } from '../utils/format';
 
@@ -23,9 +25,12 @@ export function SettingsScreen() {
     deleteTreatmentType,
     loadSampleData,
     resetAll,
+    importData,
+    snapshot,
   } = useData();
 
   const [currencySheet, setCurrencySheet] = useState(false);
+  const [busy, setBusy] = useState<'export' | 'import' | null>(null);
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypePrice, setNewTypePrice] = useState('');
   const [newTypeDuration, setNewTypeDuration] = useState('60');
@@ -79,6 +84,65 @@ export function SettingsScreen() {
     Alert.alert('Load sample data', 'This replaces all current data with a demo dataset.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Load', onPress: run },
+    ]);
+  };
+
+  const notify = (title: string, message: string) => {
+    if (Platform.OS === 'web') {
+      // eslint-disable-next-line no-alert
+      if (typeof window !== 'undefined') window.alert(`${title}\n\n${message}`);
+      return;
+    }
+    Alert.alert(title, message);
+  };
+
+  const runExport = async () => {
+    setBusy('export');
+    try {
+      const { fileName, shared } = await exportBackup(snapshot());
+      notify(
+        'Backup created',
+        shared
+          ? `${fileName}\n\nChoose where to save it. Keep it somewhere safe, such as cloud storage or email.`
+          : `${fileName} was written to the app's files.`,
+      );
+    } catch (error) {
+      notify('Backup failed', error instanceof Error ? error.message : 'Something went wrong.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const runImport = async (mode: ImportMode) => {
+    setBusy('import');
+    try {
+      const picked = await pickBackupFile();
+      if (!picked) return;
+      const summary = importData(picked.data, mode);
+      notify('Restore complete', describeImport(summary));
+    } catch (error) {
+      notify('Restore failed', error instanceof Error ? error.message : 'Something went wrong.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const confirmImport = () => {
+    const message =
+      'Merge keeps everything on this phone and adds what is in the backup. ' +
+      'Replace discards everything on this phone first.';
+
+    if (Platform.OS === 'web') {
+      // eslint-disable-next-line no-alert
+      const merge = typeof window !== 'undefined' && window.confirm(`${message}\n\nOK = Merge, Cancel = Replace`);
+      runImport(merge ? 'merge' : 'replace');
+      return;
+    }
+
+    Alert.alert('Restore from backup', message, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Merge', onPress: () => runImport('merge') },
+      { text: 'Replace', style: 'destructive', onPress: () => runImport('replace') },
     ]);
   };
 
@@ -223,6 +287,27 @@ export function SettingsScreen() {
           {formError ? <Text style={styles.error}>{formError}</Text> : null}
           <Button label="Add treatment type" variant="secondary" icon="add" onPress={addType} />
         </View>
+      </Card>
+
+      <Card title="Backup">
+        <Text style={styles.hint}>
+          Save a copy of your sessions and patients, or bring them back from a backup file.
+          Restoring on a new phone is the way to move your data across.
+        </Text>
+        <Button
+          label={busy === 'export' ? 'Preparing backup…' : 'Back up now'}
+          variant="secondary"
+          icon="share-outline"
+          disabled={busy !== null}
+          onPress={runExport}
+        />
+        <Button
+          label={busy === 'import' ? 'Restoring…' : 'Restore from backup'}
+          variant="ghost"
+          icon="cloud-upload-outline"
+          disabled={busy !== null}
+          onPress={confirmImport}
+        />
       </Card>
 
       <Card title="Data">

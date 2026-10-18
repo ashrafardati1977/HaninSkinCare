@@ -18,6 +18,7 @@ import type {
 } from '../types';
 import { createId } from '../utils/id';
 import { addMinutes } from '../utils/date';
+import { applyImport, type ImportMode, type ImportSummary } from './backup';
 import {
   buildDefaultTreatmentTypes,
   createEmptyData,
@@ -50,6 +51,11 @@ interface DataContextValue {
 
   loadSampleData: () => void;
   resetAll: () => void;
+
+  /** Replaces or merges the current data with the contents of a backup file. */
+  importData: (incoming: AppData, mode: ImportMode) => ImportSummary;
+  /** The whole dataset, for writing a backup file. */
+  snapshot: () => AppData;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -198,6 +204,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setData(buildSampleData());
   }, []);
 
+  const snapshot = useCallback(() => data, [data]);
+
+  const importData = useCallback(
+    (incoming: AppData, mode: ImportMode): ImportSummary => {
+      // Computed outside the updater so the summary can be returned synchronously.
+      const { data: next, summary } = applyImport(data, incoming, mode);
+      setData(next);
+      return summary;
+    },
+    [data],
+  );
+
   const value = useMemo<DataContextValue>(
     () => ({
       ready,
@@ -218,6 +236,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateSettings,
       loadSampleData,
       resetAll,
+      importData,
+      snapshot,
     }),
     [
       ready,
@@ -235,6 +255,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateSettings,
       loadSampleData,
       resetAll,
+      importData,
+      snapshot,
     ],
   );
 
