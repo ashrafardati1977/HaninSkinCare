@@ -19,7 +19,7 @@ import {
   toDateInputValue,
   toTimeInputValue,
 } from '../utils/date';
-import { formatMoney } from '../utils/format';
+import { formatMoney, currencySymbol } from '../utils/format';
 import type { RootStackScreenProps } from '../navigation/props';
 
 type Props = RootStackScreenProps<'SessionForm'>;
@@ -307,7 +307,7 @@ export function SessionFormScreen({ route, navigation }: Props) {
           }}
           keyboardType="decimal-pad"
           placeholder="0"
-          suffix={settings.currency}
+          suffix={currencySymbol(settings.currency)}
           error={errors.price}
         />
         <Pressable

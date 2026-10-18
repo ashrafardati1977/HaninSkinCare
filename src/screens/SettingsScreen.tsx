@@ -9,7 +9,7 @@ import { OptionSheet } from '../components/OptionSheet';
 import { TextField } from '../components/TextField';
 import { useData } from '../storage/DataProvider';
 import { colors, CURRENCIES, radius, spacing, typography } from '../theme';
-import { formatMoney } from '../utils/format';
+import { formatMoney, currencySymbol } from '../utils/format';
 
 export function SettingsScreen() {
   const {
@@ -164,7 +164,7 @@ export function SettingsScreen() {
                         })
                       }
                       keyboardType="decimal-pad"
-                      suffix={settings.currency}
+                      suffix={currencySymbol(settings.currency)}
                       style={styles.flex}
                     />
                     <TextField
@@ -206,7 +206,7 @@ export function SettingsScreen() {
               }}
               keyboardType="decimal-pad"
               placeholder="0"
-              suffix={settings.currency}
+              suffix={currencySymbol(settings.currency)}
               style={styles.flex}
             />
             <TextField

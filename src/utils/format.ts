@@ -1,12 +1,24 @@
 import type { Session, SessionStatus } from '../types';
 
-export function formatMoney(amount: number, currency = 'SAR'): string {
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+};
+
+/** Short label for input suffixes: "$" for dollars, otherwise the code itself. */
+export function currencySymbol(currency: string): string {
+  return CURRENCY_SYMBOLS[currency] ?? currency;
+}
+
+export function formatMoney(amount: number, currency = 'USD'): string {
   const safe = Number.isFinite(amount) ? amount : 0;
   const formatted = safe.toLocaleString('en-US', {
     minimumFractionDigits: safe % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   });
-  return `${formatted} ${currency}`;
+  const symbol = CURRENCY_SYMBOLS[currency];
+  return symbol ? `${symbol}${formatted}` : `${formatted} ${currency}`;
 }
 
 export function getSessionStatus(session: Session, now = new Date()): SessionStatus {

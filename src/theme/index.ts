@@ -62,11 +62,11 @@ export const shadow = {
 } as const;
 
 export const CURRENCIES = [
-  'SAR',
-  'AED',
   'USD',
   'EUR',
   'GBP',
+  'SAR',
+  'AED',
   'JOD',
   'EGP',
   'MAD',

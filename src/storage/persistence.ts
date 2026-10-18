@@ -8,7 +8,7 @@ const STORAGE_KEY = 'hanin-skincare:v1';
 
 export const DEFAULT_SETTINGS: Settings = {
   clinicName: 'Hanin Skincare',
-  currency: 'SAR',
+  currency: 'USD',
   locale: 'en',
 };
 
