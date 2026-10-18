@@ -23,15 +23,62 @@ USD.
 ```bash
 npm install
 npm run typecheck    # tsc --noEmit
+npm test             # backup/restore merge + validation tests (Node test runner)
 npm start            # Expo dev server (also serves the web target)
 ```
+
+`npm test` compiles `tests/backup.test.ts` with `tsc` into `.test-build/` and
+runs it under `node --test`. The storage layer is split so this works without a
+device: `src/storage/schema.ts` and `src/storage/backup.ts` are pure, while
+`src/storage/persistence.ts` owns the AsyncStorage calls. AsyncStorage cannot be
+imported under Node, so pure logic must not import it.
+
+## Rebuilding the Android toolchain
+
+The JDK and Android SDK are not part of the image and do not survive a workspace
+reset. `android/local.properties` is gitignored, so Gradle will fail with
+`SDK location not found` until it is recreated. To rebuild from scratch:
+
+```bash
+sudo apt-get update && sudo apt-get install -y openjdk-21-jdk-headless unzip
+mkdir -p /workspace/android-sdk/cmdline-tools && cd /tmp
+curl -sSLo cmdtools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+unzip -q cmdtools.zip -d /workspace/android-sdk/cmdline-tools
+mv /workspace/android-sdk/cmdline-tools/cmdline-tools /workspace/android-sdk/cmdline-tools/latest
+
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export ANDROID_HOME=/workspace/android-sdk
+yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+  "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+printf 'sdk.dir=/workspace/android-sdk\n' > android/local.properties
+```
+
+The SDK download is ~2.4 GB and the release build takes roughly 8 minutes on 4
+CPUs. Run it with `nohup ... > /tmp/build.log 2>&1 &` and poll the log; it
+outlives a single command timeout. The debug keystore must also be regenerated
+if `~/.android/debug.keystore` is missing:
+
+```bash
+mkdir -p ~/.android && keytool -genkeypair -v -keystore ~/.android/debug.keystore \
+  -storepass android -alias androiddebugkey -keypass android \
+  -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+```
+
+### Bumping the version
+
+`android/` is generated and gitignored, so `app.json` is the source of truth for
+the version. Bump `expo.version` and `expo.android.versionCode` there, then run
+`npx expo prebuild --platform android --no-install` to regenerate the native
+project. Android refuses to install an APK whose `versionCode` is not greater
+than the installed one, so raise `versionCode` for every APK you hand out.
 
 ## Building an Android APK
 
 The repo uses the Expo managed workflow. `android/` and `ios/` are gitignored and
 generated on demand by `npx expo prebuild`.
 
-Local build (needs JDK 21, Android SDK with platform 35, build-tools 35.0.0,
+Local build (needs JDK 21, Android SDK with platform 36, build-tools 36.0.0,
 NDK 27.1.12297006):
 
 ```bash
