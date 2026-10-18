@@ -52,6 +52,49 @@ npm run web
 npm run typecheck
 ```
 
+## Running it on a phone
+
+Expo Go is the quickest way to try the app. Install **Expo Go** from the Play
+Store or App Store, run `npm start`, and scan the QR code. The phone and the
+computer need to be on the same Wi-Fi network.
+
+## Building an installable app (APK / AAB)
+
+To install the app on a phone without Expo Go, or to publish it to a store, build
+it with EAS. This runs on Expo's build servers, so no Android SDK or Java is
+needed locally.
+
+```bash
+npm install -g eas-cli
+eas login
+eas build:configure
+```
+
+Then build:
+
+```bash
+# Installable Android APK, for sideloading onto a phone
+eas build --platform android --profile preview
+
+# Play Store bundle (.aab)
+eas build --platform android --profile production
+
+# iOS
+eas build --platform ios --profile production
+```
+
+The `preview` profile produces an APK you can download and install directly on an
+Android phone. Build profiles live in `eas.json`.
+
+Notes:
+
+- An Expo account is required, and builds run on Expo's servers.
+- iOS builds additionally need an Apple Developer account.
+- The Android package is `com.haninskincare.app` and the iOS bundle id is
+  `com.haninskincare.app` (both set in `app.json`).
+- A local build without EAS is possible with `npx expo run:android`, but that
+  needs Android Studio, the Android SDK and Java installed.
+
 ## Project layout
 
 ```
