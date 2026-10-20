@@ -1,7 +1,7 @@
 # Hanin Skincare
 
 Expo (React Native) + TypeScript app for a skincare clinic's patient sessions.
-Data is stored on the device with AsyncStorage; the app works offline.
+Data is stored on the device in SQLite (via `expo-sqlite`); the app works offline.
 
 ## Session model
 
@@ -27,11 +27,33 @@ npm test             # backup/restore merge + validation tests (Node test runner
 npm start            # Expo dev server (also serves the web target)
 ```
 
-`npm test` compiles `tests/backup.test.ts` with `tsc` into `.test-build/` and
-runs it under `node --test`. The storage layer is split so this works without a
-device: `src/storage/schema.ts` and `src/storage/backup.ts` are pure, while
-`src/storage/persistence.ts` owns the AsyncStorage calls. AsyncStorage cannot be
-imported under Node, so pure logic must not import it.
+`npm test` compiles the suites in `tests/` with `tsc` into `.test-build/` and
+runs them under `node --test`. The storage layer is split so this works without a
+device: `src/storage/schema.ts`, `src/storage/backup.ts`, `src/storage/rows.ts`
+and `src/storage/diff.ts` are pure, while `src/storage/database.ts` and
+`src/storage/persistence.ts` own the SQLite calls. The native modules cannot be
+imported under Node, so pure logic must not import them.
+
+## Storage
+
+Sessions, patients, treatment types and settings live in SQLite
+(`hanin-skincare.db`, four tables plus a `meta` key/value table).
+
+- `src/storage/rows.ts` maps between the domain objects (camelCase) and the
+  SQLite columns (snake_case). Keep it pure so it stays unit tested.
+- `src/storage/diff.ts` computes the minimal set of row writes between the
+  previous and next state, so an edit only touches the rows that changed.
+- `src/storage/persistence.ts` keeps the original `loadData`/`saveData`/
+  `clearData` API, so `DataProvider` and the backup feature are unaware of the
+  change. Web falls back to AsyncStorage because `expo-sqlite` needs a WASM and
+  worker setup there.
+- On first launch the legacy AsyncStorage payload is copied into SQLite once,
+  guarded by the `asyncstorage_migrated_v1` row in `meta`. The AsyncStorage entry
+  is intentionally left behind as a safety net, so do not treat it as dead code.
+- Default treatment types are seeded into the database on a fresh install. Their
+  ids are referenced by sessions, so they must not be regenerated per launch.
+- `expo-sqlite` is a native module: adding it requires a rebuild, and it is
+  listed in `app.json` plugins.
 
 ## Rebuilding the Android toolchain
 
