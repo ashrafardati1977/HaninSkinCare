@@ -3,7 +3,7 @@
 A mobile app for managing a skincare clinic's sessions and patients.
 
 Built with Expo (React Native) and TypeScript. Data is stored on the device
-with AsyncStorage, so the app works offline.
+in SQLite on the device, so the app works offline.
 
 ## What it does
 
@@ -104,7 +104,7 @@ src/
   components/                 Reusable UI (Button, TextField, Card, ChipSelect, ...)
   navigation/                 Stack and tab navigators, route types
   screens/                    One file per screen
-  storage/                    AsyncStorage persistence and the data context
+  storage/                    SQLite persistence and the data context
   theme/                      Colours, spacing, typography, default treatment types
   types/                      Domain types (Session, Patient, TreatmentType, Settings)
   utils/                      Date and currency helpers
@@ -112,9 +112,16 @@ src/
 
 ## Data
 
-State lives in a React context (`src/storage/DataProvider.tsx`) and is saved to
-AsyncStorage after every change. Stored data is validated on load, so a corrupt
-or older record falls back to safe defaults instead of crashing the app.
+State lives in a React context (`src/storage/DataProvider.tsx`) and is written to
+SQLite (`expo-sqlite`) after every change, through
+`src/storage/persistence.ts`. Only the rows that changed are written, so an edit
+does not rewrite the whole dataset. Stored data is validated on load, so a
+corrupt or older record falls back to safe defaults instead of crashing the app.
+
+On first launch the app copies any data left in AsyncStorage into SQLite. The old
+AsyncStorage entry is kept as a safety net and is not read again. On web the app
+still uses AsyncStorage, because `expo-sqlite` needs a WASM and worker setup
+there.
 
 Data stays on the device. Settings has "Load sample data" to fill the app with a
 demo dataset, and "Delete all data" to clear everything.
