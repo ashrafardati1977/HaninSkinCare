@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -13,6 +14,9 @@ import { describeImport, type ImportMode } from '../storage/backup';
 import { exportBackup, pickBackupFile } from '../storage/backupFiles';
 import { colors, CURRENCIES, radius, spacing, typography } from '../theme';
 import { formatMoney, currencySymbol } from '../utils/format';
+
+/** Read from app.json so the UI cannot drift from the shipped build. */
+const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
 
 export function SettingsScreen() {
   const {
@@ -323,7 +327,7 @@ export function SettingsScreen() {
         <Button label="Delete all data" variant="danger" icon="trash-outline" onPress={confirmReset} />
       </Card>
 
-      <Text style={styles.version}>Hanin Skincare · v1.0.0</Text>
+      <Text style={styles.version}>Hanin Skincare · v{APP_VERSION}</Text>
 
       <OptionSheet
         visible={currencySheet}

@@ -34,3 +34,6 @@ yarn-error.log*
 
 # Compiled test output
 .test-build/
+
+# Web export output
+dist-web/
